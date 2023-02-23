@@ -1,6 +1,6 @@
 # How to Contribute
 
-We would love to accept your patches and contributions to this project.
+I would love to accept your patches and contributions to this project!
 
 ## Before you begin
 
@@ -20,13 +20,16 @@ sign a new one.
 
 ### Review our Community Guidelines
 
-This project follows [Google's Open Source Community
-Guidelines](https://opensource.google/conduct/).
+This project follows
+[Google's Open Source Community Guidelines](https://opensource.google/conduct/).
 
 ## Contribution process
 
 ### Code Reviews
 
-All submissions, including submissions by project members, require review. We 
-use [GitHub pull requests](https://help.github.com/articles/about-pull-requests/)
-for this purpose.
+Code reviews are cool! If you want to contribute, submit a
+[GitHub pull request](https://help.github.com/articles/about-pull-requests/) and
+I'll happily review it for inclusion. I'd love to get my own code reviewed as
+well, but since it's just me writing this, I can't. If you spot something in my
+code that you think I could do better, please file an issue on this repository,
+and I'll take a look!

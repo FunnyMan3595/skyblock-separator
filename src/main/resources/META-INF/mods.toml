@@ -1,0 +1,33 @@
+modLoader="javafml"
+loaderVersion="[42,)"
+license="Apache License"
+issueTrackerURL="https://github.com/FunnyMan3595/skyblock-separator/issues"
+
+[[mods]]
+modId="skyblock_separator"
+version="${file.jarVersion}"
+displayName="Skyblock Separator"
+displayURL="github.com/FunnyMan3595/skyblock-separator"
+authors="FunnyMan3595"
+description='''Skyblock Separator is an extension of MelanX's SkyblockBuilder which separates the players' inventory on a per-island basis and adds an impassable border between islands.'''
+
+[[dependencies.skyblock_separator]]
+    modId = "forge"
+    mandatory = true
+    versionRange = "[43.1.2,)"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies.skyblock_separator]]
+    modId = "minecraft"
+    mandatory = true
+    versionRange = "[1.19.2, 1.20)"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies.skyblock_separator]]
+    modId = "skyblockbuilder"
+    mandatory = true
+    versionRange = "[1.19.2-4.2.6,)"
+    ordering = "AFTER"
+    side = "BOTH"

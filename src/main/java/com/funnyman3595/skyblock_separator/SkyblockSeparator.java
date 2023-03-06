@@ -44,10 +44,6 @@ public class SkyblockSeparator
 	public static ResourceLocation resourceLocation(String path) {
 		return new ResourceLocation(MODID, path);
 	}
-	
-	public static SeparatedInventory getSeparatedInventory(Player player) {
-		return SeparatedInventory.get(player);
-	}
 
     private void registerCommands(final RegisterCommandsEvent event)
     {
@@ -92,6 +88,14 @@ public class SkyblockSeparator
     private void onTick(final TickEvent.PlayerTickEvent event)
     {
     	if (event.player.getLevel().dimension() != Level.OVERWORLD) {
+    		return;
+    	}
+    	
+    	// Avoid crashing if the capability hasn't been added yet.
+    	// (e.g. on death)
+    	try {
+    		SeparatedInventory.get(event.player);
+    	} catch (SeparatedInventory.SeparatedInventoryNotFoundException e) {
     		return;
     	}
     	

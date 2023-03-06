@@ -14,6 +14,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -99,17 +100,22 @@ public class SkyblockSeparator
     		return;
     	}
     	
+    	Entity rootEntity = event.player;
+    	while (rootEntity.isPassenger()) {
+    		rootEntity = rootEntity.getVehicle();
+    	}
+    	
     	int islandDistance = ConfigHandler.World.islandDistance;
-    	double islandX = realMod((event.player.getX() / islandDistance) + 0.5, 1.0);
-    	double islandZ = realMod((event.player.getZ() / islandDistance) + 0.5, 1.0);
+    	double islandX = realMod((rootEntity.getX() / islandDistance) + 0.5, 1.0);
+    	double islandZ = realMod((rootEntity.getZ() / islandDistance) + 0.5, 1.0);
     	double boundedIslandX = Math.min(Math.max(islandX, 0.01), 0.99);
     	double boundedIslandZ = Math.min(Math.max(islandZ, 0.01), 0.99);
     	if (islandX != boundedIslandX || islandZ != boundedIslandZ) {
-    		Vec3 currentPos = event.player.position();
+    		Vec3 currentPos = rootEntity.position();
     		double boundedX = currentPos.x + (boundedIslandX - islandX) * islandDistance;
     		double boundedZ = currentPos.z + (boundedIslandZ - islandZ) * islandDistance;
-    		event.player.setPos(new Vec3(boundedX, currentPos.y, boundedZ));
-    		event.player.setDeltaMovement(0, 0, 0);
+    		rootEntity.setPos(new Vec3(boundedX, currentPos.y, boundedZ));
+    		rootEntity.setDeltaMovement(0, 0, 0);
     		event.player.sendSystemMessage(Component.literal("You have reached the island border."));
     	}
     	

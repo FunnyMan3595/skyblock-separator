@@ -61,7 +61,7 @@ public class SkyblockSeparator
     	SkyblockSavedData skyblock = SkyblockSavedData.get(player.getLevel());
     	Team team = skyblock.getTeamFromPlayer(player);
     	
-    	LOGGER.info("Player " + player.getScoreboardName() + " currently on island " + island.toTag().toString() + ", home island is " + team.getIsland().toTag().toString());
+    	//LOGGER.info("Player " + player.getScoreboardName() + " currently on island " + island.toTag().toString() + ", home island is " + team.getIsland().toTag().toString());
     	
     	return team.getIsland().equals(island);
     }
@@ -75,7 +75,7 @@ public class SkyblockSeparator
     	int islandDistance = ConfigHandler.World.islandDistance;
     	double islandX = (x / islandDistance) + 0.5;
     	double islandZ = (z / islandDistance) + 0.5;
-    	return new IslandPos(level, (int) islandX, (int) islandZ);
+    	return new IslandPos(level, (int) Math.floor(islandX), (int) Math.floor(islandZ));
     }
     
     public double realMod(double num, double modulus) {

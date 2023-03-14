@@ -8,8 +8,6 @@ import de.melanx.skyblockbuilder.data.SkyblockSavedData;
 import de.melanx.skyblockbuilder.data.Team;
 import de.melanx.skyblockbuilder.world.IslandPos;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.entity.EntityTeleportEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.event.TickEvent;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
@@ -22,6 +20,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
+import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
 
@@ -88,14 +87,18 @@ public class SkyblockSeparator
 
     private void onTick(final TickEvent.PlayerTickEvent event)
     {
+    	if (event.side == LogicalSide.CLIENT) {
+    		return;
+    	}
     	if (event.player.getLevel().dimension() != Level.OVERWORLD) {
     		return;
     	}
     	
     	// Avoid crashing if the capability hasn't been added yet.
     	// (e.g. on death)
+    	SeparatedInventory separatedInventory;
     	try {
-    		SeparatedInventory.get(event.player);
+    		separatedInventory = SeparatedInventory.get(event.player);
     	} catch (SeparatedInventory.SeparatedInventoryNotFoundException e) {
     		return;
     	}
@@ -120,7 +123,6 @@ public class SkyblockSeparator
     	}
     	
     	IslandPos newIsland = getIsland(event.player.getLevel(), event.player.getPosition(0));
-    	SeparatedInventory separatedInventory = SeparatedInventory.get(event.player);
     	if (separatedInventory.lastIsland == null) {
     		separatedInventory.lastIsland = newIsland;
     		return;

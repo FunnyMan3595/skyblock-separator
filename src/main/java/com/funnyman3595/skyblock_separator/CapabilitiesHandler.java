@@ -5,6 +5,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -27,5 +28,14 @@ public class CapabilitiesHandler {
 		if (!(event.getObject() instanceof Player)) return;
 		
 		event.addCapability(SEPARATED_INVENTORY, new SeparatedInventory());
+	}
+	
+	@SubscribeEvent
+	public static void onClone(PlayerEvent.Clone event) {
+		event.getOriginal().reviveCaps();
+		SeparatedInventory old = SeparatedInventory.get(event.getOriginal());
+		SeparatedInventory clone = SeparatedInventory.get(event.getEntity());
+		clone.deserializeNBT(old.serializeNBT());
+		event.getOriginal().invalidateCaps();
 	}
 }

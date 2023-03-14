@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fml.ModList;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class SeparatedInventory implements ICapabilitySerializable<CompoundTag> 
 	public static final String LAST_ISLAND_NBT_KEY = "last_island";
 	public Map<IslandPos, ListTag> inventories = new HashMap<IslandPos, ListTag>();
 	public Map<IslandPos, ListTag> enderInventories = new HashMap<IslandPos, ListTag>();
+	public Map<IslandPos, ListTag> curiosInventories = new HashMap<IslandPos, ListTag>();
 	public IslandPos lastIsland = null;
 	
 	public static SeparatedInventory get(Player player) {
@@ -38,17 +40,28 @@ public class SeparatedInventory implements ICapabilitySerializable<CompoundTag> 
 		get(player).lastIsland = to;
 	}
 	
-	public static void saveIsland(Player player, IslandPos island) {
+	private static void saveIsland(Player player, IslandPos island) {
+		if (ModList.get().isLoaded("curios")) {
+			ListTag curiosInventory = CuriosIntegration.saveFor(player);
+			get(player).curiosInventories.put(island, curiosInventory);
+		}
+		ListTag enderInventory = player.getEnderChestInventory().createTag();
+		get(player).enderInventories.put(island, enderInventory);
 		ListTag inventory = new ListTag();
 		player.getInventory().save(inventory);
-		ListTag enderInventory = player.getEnderChestInventory().createTag();
 		get(player).inventories.put(island, inventory);
-		get(player).enderInventories.put(island, enderInventory);
+		// New inventories go BEFORE the main inventory, so we trigger the sync
+		// at the right time.
 	}
 	
-	public static void loadIsland(Player player, IslandPos island) {
-		player.getInventory().load(get(player).inventories.getOrDefault(island, new ListTag()));
+	private static void loadIsland(Player player, IslandPos island) {
+		if (ModList.get().isLoaded("curios")) {
+			CuriosIntegration.loadFor(player, get(player).curiosInventories.getOrDefault(island, new ListTag()));
+		}
 		player.getEnderChestInventory().fromTag(get(player).enderInventories.getOrDefault(island, new ListTag()));
+		player.getInventory().load(get(player).inventories.getOrDefault(island, new ListTag()));
+		// New inventories go BEFORE the main inventory, so we trigger the sync
+		// at the right time.
 	}
 	
 	@Override
@@ -60,6 +73,7 @@ public class SeparatedInventory implements ICapabilitySerializable<CompoundTag> 
 			separatedInventory.put("island", island.toTag());
 			separatedInventory.put("inventory", inventory);
 			separatedInventory.put("ender_inventory", enderInventories.get(island));
+			separatedInventory.put("curios_inventory", curiosInventories.get(island));
 			list.add(separatedInventory);
 		});
 		tag.put(MAIN_NBT_KEY, list);
@@ -75,12 +89,13 @@ public class SeparatedInventory implements ICapabilitySerializable<CompoundTag> 
 		var list = tag.getList(MAIN_NBT_KEY, Tag.TAG_COMPOUND);
 		inventories.clear();
 		enderInventories.clear();
+		curiosInventories.clear();
 		for (Tag rawTag : list) {
 			CompoundTag inventoryTag = (CompoundTag) rawTag;
-			inventories.put(IslandPos.fromTag(inventoryTag.getCompound("island")),
-					(ListTag) inventoryTag.getList("inventory", Tag.TAG_COMPOUND));
-			enderInventories.put(IslandPos.fromTag(inventoryTag.getCompound("island")),
-					(ListTag) inventoryTag.getList("ender_inventory", Tag.TAG_COMPOUND));
+			IslandPos island = IslandPos.fromTag(inventoryTag.getCompound("island"));
+			inventories.put(island, (ListTag) inventoryTag.getList("inventory", Tag.TAG_COMPOUND));
+			enderInventories.put(island, (ListTag) inventoryTag.getList("ender_inventory", Tag.TAG_COMPOUND));
+			curiosInventories.put(island, (ListTag) inventoryTag.getList("curios_inventory", Tag.TAG_COMPOUND));
 		}
 		CompoundTag lastIslandTag = tag.getCompound(LAST_ISLAND_NBT_KEY);
 		if (!lastIslandTag.isEmpty()) {
@@ -89,6 +104,7 @@ public class SeparatedInventory implements ICapabilitySerializable<CompoundTag> 
 	}
 
 	private final LazyOptional<SeparatedInventory> capabilityOptional = LazyOptional.of(() -> this);
+
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
 		return capability == SkyblockSeparator.separatedInventory ? capabilityOptional.cast() : LazyOptional.empty();

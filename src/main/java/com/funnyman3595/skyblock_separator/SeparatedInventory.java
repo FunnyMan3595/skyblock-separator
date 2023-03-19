@@ -23,6 +23,7 @@ public class SeparatedInventory implements ICapabilitySerializable<CompoundTag> 
 	public Map<IslandPos, ListTag> inventories = new HashMap<IslandPos, ListTag>();
 	public Map<IslandPos, ListTag> enderInventories = new HashMap<IslandPos, ListTag>();
 	public Map<IslandPos, ListTag> curiosInventories = new HashMap<IslandPos, ListTag>();
+	public Map<IslandPos, CompoundTag> carryonBlocks = new HashMap<IslandPos, CompoundTag>();
 	public IslandPos lastIsland = null;
 	
 	public static SeparatedInventory get(Player player) {
@@ -41,6 +42,10 @@ public class SeparatedInventory implements ICapabilitySerializable<CompoundTag> 
 	}
 	
 	private static void saveIsland(Player player, IslandPos island) {
+		if (ModList.get().isLoaded("carryon")) {
+			CompoundTag carryonBlock = CarryOnIntegration.saveFor(player);
+			get(player).carryonBlocks.put(island, carryonBlock);
+		}
 		if (ModList.get().isLoaded("curios")) {
 			ListTag curiosInventory = CuriosIntegration.saveFor(player);
 			get(player).curiosInventories.put(island, curiosInventory);
@@ -55,6 +60,9 @@ public class SeparatedInventory implements ICapabilitySerializable<CompoundTag> 
 	}
 	
 	private static void loadIsland(Player player, IslandPos island) {
+		if (ModList.get().isLoaded("carryon")) {
+			CarryOnIntegration.loadFor(player, get(player).carryonBlocks.getOrDefault(island, new CompoundTag()));
+		}
 		if (ModList.get().isLoaded("curios")) {
 			CuriosIntegration.loadFor(player, get(player).curiosInventories.getOrDefault(island, new ListTag()));
 		}
@@ -74,6 +82,7 @@ public class SeparatedInventory implements ICapabilitySerializable<CompoundTag> 
 			separatedInventory.put("inventory", inventory);
 			separatedInventory.put("ender_inventory", enderInventories.get(island));
 			separatedInventory.put("curios_inventory", curiosInventories.get(island));
+			separatedInventory.put("carryon_block", carryonBlocks.get(island));
 			list.add(separatedInventory);
 		});
 		tag.put(MAIN_NBT_KEY, list);
@@ -96,6 +105,7 @@ public class SeparatedInventory implements ICapabilitySerializable<CompoundTag> 
 			inventories.put(island, (ListTag) inventoryTag.getList("inventory", Tag.TAG_COMPOUND));
 			enderInventories.put(island, (ListTag) inventoryTag.getList("ender_inventory", Tag.TAG_COMPOUND));
 			curiosInventories.put(island, (ListTag) inventoryTag.getList("curios_inventory", Tag.TAG_COMPOUND));
+			carryonBlocks.put(island, inventoryTag.getCompound("carryon_block"));
 		}
 		CompoundTag lastIslandTag = tag.getCompound(LAST_ISLAND_NBT_KEY);
 		if (!lastIslandTag.isEmpty()) {
